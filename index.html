@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Darby Cobbs Watershed Viewer</title>
+    <title>_--Darby Cobbs Watershed Viewer</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -21,6 +21,8 @@
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community'
         }).addTo(map);
 
+        var lastClickedLayer = null; // Variable to keep track of the last clicked layer
+
         var geojsonLayer = L.geoJSON(hovermap, {
             style: function () {
                 return {
@@ -36,14 +38,24 @@
                         highlightFeature(e);
                     },
                     mouseout: function (e) {
-                        geojsonLayer.resetStyle(e.target);
+                        if (e.target !== lastClickedLayer) {
+                            geojsonLayer.resetStyle(e.target);
+                        }
                     },
-                    click: function (e) {
-                        highlightFeature(e);
+                    click: function (e) { // Handle single click for highlighting
+                        handleFeatureClick(e);
                     }
                 });
             }
         }).addTo(map);
+
+        function handleFeatureClick(e) {
+            if (lastClickedLayer && lastClickedLayer !== e.target) {
+                geojsonLayer.resetStyle(lastClickedLayer);
+            }
+            highlightFeature(e);
+            lastClickedLayer = e.target; // Update last clicked layer
+        }
 
         function highlightFeature(e) {
             var layer = e.target;
@@ -57,11 +69,12 @@
             layer.bindTooltip(layer.feature.properties.MUNICIPAL1).openTooltip();
         }
 
-        map.on('click', function (e) {
-            if (e.originalEvent.target === map._container) {
-                geojsonLayer.eachLayer(function (layer) {
-                    geojsonLayer.resetStyle(layer);
-                });
+        map.on('click', function (e) { // Handle click on the map for reset
+            if (!e.originalEvent._leaflet) {
+                if (lastClickedLayer) {
+                    geojsonLayer.resetStyle(lastClickedLayer);
+                    lastClickedLayer = null;
+                }
             }
         });
     </script>
