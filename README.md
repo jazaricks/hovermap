@@ -1,3 +1,3 @@
 # hovermap
 hovermap
-https://mckeont.github.io/hovermap/
+https://jazaricks.github.io/hovermap/
